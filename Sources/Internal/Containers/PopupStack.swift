@@ -38,20 +38,29 @@ extension PopupStack { enum StackOperation {
 }}
 extension PopupStack {
     func modify(_ operation: StackOperation) { Task {
-        await hideKeyboard()
+        // If the popup should dismiss keyboard, dismiss it
+        await hideKeyboard(operation)
 
-        let oldPopups = popups,
-            newPopups = await getNewPopups(operation),
-            newPriority = await getNewPriority(newPopups)
+        let oldPopups = popups
+        let newPopups = await getNewPopups(operation)
+        let newPriority = await getNewPriority(newPopups)
 
         await updatePopups(newPopups)
         await updatePriority(newPriority, oldPopups.count)
     }}
 }
 private extension PopupStack {
-    nonisolated func hideKeyboard() async {
-        await AnyView.hideKeyboard()
+    nonisolated func hideKeyboard(_ operation: StackOperation) async {
+        switch operation {
+        case .insertPopup(let popup):
+            guard popup.shouldDismissKeyboardOnPopupToggle else { return }
+            await AnyView.hideKeyboard()
+        default:
+            guard await popups.last?.shouldDismissKeyboardOnPopupToggle ?? true else { return }
+            await AnyView.hideKeyboard()
+        }
     }
+    
     nonisolated func getNewPopups(_ operation: StackOperation) async -> [AnyPopup] { switch operation {
         case .insertPopup(let popup): await insertedPopup(popup)
         case .removeLastPopup: await removedLastPopup()
