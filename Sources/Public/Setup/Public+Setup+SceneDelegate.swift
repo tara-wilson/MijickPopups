@@ -55,6 +55,10 @@ import SwiftUI
 open class PopupSceneDelegate: NSObject, UIWindowSceneDelegate {
     open var window: UIWindow?
     open var configBuilder: (GlobalConfigContainer) -> (GlobalConfigContainer) = { _ in .init() }
+    open func sceneDidConnect(_ scene: UIScene, session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        // This method is called when the scene has connected to the session.
+        // You can use this method to initialize any resources that are specific to the scene.
+    }
 }
 
 // MARK: Create Popup Scene
@@ -69,6 +73,7 @@ extension PopupSceneDelegate {
         window = Window(windowScene: windowScene)
         window?.rootViewController = hostingController
         window?.isHidden = false
+        sceneDidConnect(scene, session: session, options: options) // Call the sceneDidConnect method to perform any additional setup.
     }}
 }
 
